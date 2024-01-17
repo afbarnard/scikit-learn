@@ -107,6 +107,7 @@ def _logistic_regression_path(
     Cs=10,
     fit_intercept=True,
     max_iter=100,
+    max_f_evals=None,
     tol=1e-4,
     verbose=0,
     solver="lbfgs",
@@ -158,6 +159,11 @@ def _logistic_regression_path(
 
     max_iter : int, default=100
         Maximum number of iterations for the solver.
+
+    max_f_evals : int, default=None
+        Maximum number of function evaluations the solver is allowed.
+        When ``None``, takes the same value as ``max_iter``.  Only
+        applies to solver 'lbfgs'.
 
     tol : float, default=1e-4
         Stopping criterion. For the newton-cg and lbfgs solvers, the iteration
@@ -460,6 +466,7 @@ def _logistic_regression_path(
                 args=(X, target, sample_weight, l2_reg_strength, n_threads),
                 options={
                     "maxiter": max_iter,
+                    "maxfun": max_f_evals if max_f_evals is not None else max_iter,
                     "maxls": 50,  # default is 20
                     "iprint": iprint,
                     "gtol": tol,
@@ -944,6 +951,11 @@ class LogisticRegression(LinearClassifierMixin, SparseCoefMixin, BaseEstimator):
     max_iter : int, default=100
         Maximum number of iterations taken for the solvers to converge.
 
+    max_f_evals : int, default=None
+        Maximum number of function evaluations the solver is allowed.
+        When ``None``, takes the same value as ``max_iter``.  Only
+        applies to solver 'lbfgs'.
+
     multi_class : {'auto', 'ovr', 'multinomial'}, default='auto'
         If the option chosen is 'ovr', then a binary problem is fit for each
         label. For 'multinomial' the loss minimised is the multinomial loss fit
@@ -1097,6 +1109,7 @@ class LogisticRegression(LinearClassifierMixin, SparseCoefMixin, BaseEstimator):
             )
         ],
         "max_iter": [Interval(Integral, 0, None, closed="left")],
+        "max_f_evals": [Interval(Integral, 0, None, closed="left")],
         "multi_class": [StrOptions({"auto", "ovr", "multinomial"})],
         "verbose": ["verbose"],
         "warm_start": ["boolean"],
@@ -1117,6 +1130,7 @@ class LogisticRegression(LinearClassifierMixin, SparseCoefMixin, BaseEstimator):
         random_state=None,
         solver="lbfgs",
         max_iter=100,
+        max_f_evals=None,
         multi_class="auto",
         verbose=0,
         warm_start=False,
@@ -1133,6 +1147,7 @@ class LogisticRegression(LinearClassifierMixin, SparseCoefMixin, BaseEstimator):
         self.random_state = random_state
         self.solver = solver
         self.max_iter = max_iter
+        self.max_f_evals = max_f_evals
         self.multi_class = multi_class
         self.verbose = verbose
         self.warm_start = warm_start
@@ -1306,6 +1321,7 @@ class LogisticRegression(LinearClassifierMixin, SparseCoefMixin, BaseEstimator):
                 solver=solver,
                 multi_class=multi_class,
                 max_iter=self.max_iter,
+                max_f_evals=self.max_f_evals,
                 class_weight=self.class_weight,
                 check_input=False,
                 random_state=self.random_state,
